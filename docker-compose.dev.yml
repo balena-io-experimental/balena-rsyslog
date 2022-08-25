@@ -1,0 +1,26 @@
+version: '2.1'
+
+services:
+  rsyslog:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: 'unless-stopped'
+    volumes:
+      - work:/var/spool/rsyslog
+      - state:/var/run/rsyslog # For journal.state file
+      - ./dev-logs:/var/log/rsyslog # For test logs
+      - /var/log/journal:/var/log/journal:ro
+      - /run/log/journal:/run/log/journal:ro
+      - /etc/machine-id:/etc/machine-id:ro
+    environment:
+      - PIPE_PATH=/etc/pipe/stream_pipe
+      - MAX_MESSAGE_LENGTH=10000
+      # For test env only. These should be set as service vars when
+      # developing on a balena device if using rsyslog as a container.
+      - IMAGE_ID=1234567
+      - SERVICE_ID=7654321
+
+volumes:
+  work:
+  state:

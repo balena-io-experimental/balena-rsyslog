@@ -1,0 +1,10 @@
+#!/command/with-contenv bash
+
+if [[ -z "$IMAGE_ID" ]] || [[ -z "$SERVICE_ID" ]]; then
+    echo "SERVICE_ID and IMAGE_ID must be set as service vars equal to the logger service for testing."
+    echo "Sleeping infinity..."
+    exec sleep infinity
+else
+    echo "Starting rsyslog daemon..."
+    exec rsyslogd -n -f /etc/rsyslog.conf
+fi

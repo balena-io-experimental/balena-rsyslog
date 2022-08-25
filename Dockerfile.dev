@@ -1,0 +1,24 @@
+# Before running this, run `docker build --tag rsyslog-build --file Dockerfile.dev.build --force-rm .`
+# The build & dev image are separated manually to save time on re-running the build.
+FROM rsyslog-build as build
+
+ARG S6_OVERLAY_VERSION=3.1.1.2
+
+# Install non-development dependencies
+RUN apt-get update && \
+    apt-get install -y \
+        libestr0 \
+        libfastjson4 \
+        xz-utils \
+        curl \
+        zstd
+
+# Add s6 overlay
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz /tmp
+RUN tar -C / -Jxpf /tmp/s6-overlay-x86_64.tar.xz
+ENTRYPOINT ["/init"]
+
+# Copy rsyslog & s6 configs
+COPY etc/ /etc/

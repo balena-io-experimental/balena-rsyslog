@@ -1,0 +1,43 @@
+## Build ##
+# The build must use ubuntu or another distro with libsystemd, so Alpine is not possible.
+FROM ubuntu as build
+
+ARG RSYSLOG_VERSION=v8.2206.0
+
+RUN apt-get update && \
+    apt-get install -y \
+        git \
+        autoconf \
+        automake \
+        build-essential \
+        pkg-config \
+        libestr-dev \
+        m4 \
+        libtool \
+        libfastjson-dev \
+        zlib1g-dev \
+        uuid-dev \
+        libgcrypt20-dev \
+        libcurl4-openssl-dev \
+        flex \
+        bison \
+        libsystemd-dev
+
+WORKDIR /usr/src/app
+
+RUN git clone \
+        --depth=1 --branch ${RSYSLOG_VERSION} \
+        https://github.com/rsyslog/rsyslog.git
+
+RUN ./rsyslog/autogen.sh \
+        --enable-generate-man-pages=no \
+        --enable-imjournal \
+        --enable-mmjsonparse && \
+    make install
+
+## Built binaries & libs without development libraries ##
+FROM ubuntu as run
+
+# Copy built libs and binary
+COPY --from=build /usr/local/lib/rsyslog /usr/local/lib/rsyslog
+COPY --from=build /usr/local/sbin/rsyslogd /usr/local/sbin/rsyslogd
