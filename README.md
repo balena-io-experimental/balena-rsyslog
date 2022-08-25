@@ -1,6 +1,7 @@
 # balena-rsyslog
 A containerized logging solution for exporting balena service logs, using `rsyslog`.
 
+TODO - this README is incomplete.
 ## Development
 ### SERVICE_ID / IMAGE_ID service vars
 To acquire and set SERVICE_ID and IMAGE_ID service vars:
@@ -15,6 +16,3 @@ balena exec -it balena_supervisor node -e "sqlite3=require('sqlite3'); db = new 
 
 ### Named pipe
 Verify working on dev machine with `echo 'test' | systemd-cat` (if running an OS with systemd).
-
-1715006
-5319276
