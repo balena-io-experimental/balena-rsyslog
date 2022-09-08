@@ -3,23 +3,36 @@ version: '2.1'
 services:
   rsyslog:
     build: .
-    restart: unless_stopped
+    restart: unless-stopped
+    depends_on:
+      - "forwarder"
     volumes:
       - work:/var/spool/rsyslog
       - state:/var/run/rsyslog # For journal.state file
-      # - logs:/var/log/rsyslog # For testing with omfile or piping to file
-    environment:
-      - PIPE_PATH=/etc/pipe/stream_pipe
-      - MAX_MESSAGE_LENGTH=10000
+      - logs:/var/log/rsyslog # For testing with omfile or piping to file
+    # environment:
+      # - PIPE_PATH=/etc/pipe/stream_pipe
     labels:
       io.balena.features.journal-logs: '1'
-      io.balena.features.balena-api: '1'
   logger: # Test logger for sanity checking balena log streaming
     build: ./logger
-    restart: unless_stopped
+    restart: unless-stopped
+  forwarder: # Device --> balena API log forwarder as a PoC
+    build: ./forwarder
+    restart: unless-stopped
+    expose:
+      - "4224"
+    volumes:
+      - logs:/usr/src/app/logs
+    labels:
+      io.balena.features.balena-api: '1'
+
+networks:
+  logs:
+    driver: bridge
 
 volumes:
   work:
   state:
   logs:
-  pipe:
+  # pipe:

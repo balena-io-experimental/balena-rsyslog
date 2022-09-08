@@ -1,4 +1,5 @@
-# Before running this, run `docker build --tag rsyslog-build --file Dockerfile.dev.build --force-rm .`
+# Before running this, run:
+# `docker build --tag rsyslog-build --file Dockerfile.dev.build --force-rm .`
 # The build & dev image are separated manually to save time on re-running the build.
 FROM rsyslog-build as build
 
@@ -10,8 +11,7 @@ RUN apt-get update && \
         libestr0 \
         libfastjson4 \
         xz-utils \
-        curl \
-        zstd
+        curl
 
 # Add s6 overlay
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
@@ -22,3 +22,8 @@ ENTRYPOINT ["/init"]
 
 # Copy rsyslog & s6 configs
 COPY etc/ /etc/
+
+# Set up Node log forwarder (dev only)
+COPY forwarder /usr/src/app
+
+RUN cd /usr/src/app && npm install

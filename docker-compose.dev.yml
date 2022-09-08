@@ -5,7 +5,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    restart: 'unless-stopped'
+    restart: unless-stopped
+    networks:
+      - logs
+    depends_on:
+      - "forwarder"
     volumes:
       - work:/var/spool/rsyslog
       - state:/var/run/rsyslog # For journal.state file
@@ -14,12 +18,28 @@ services:
       - /run/log/journal:/run/log/journal:ro
       - /etc/machine-id:/etc/machine-id:ro
     environment:
-      - PIPE_PATH=/etc/pipe/stream_pipe
-      - MAX_MESSAGE_LENGTH=10000
+      # - PIPE_PATH=/etc/pipe/stream_pipe
       # For test env only. These should be set as service vars when
       # developing on a balena device if using rsyslog as a container.
       - IMAGE_ID=1234567
       - SERVICE_ID=7654321
+  forwarder: # Device --> balena API log forwarder as a PoC
+    build: 
+      context: ./forwarder
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    volumes:
+      - ./dev-logs:/usr/src/app/logs
+    expose:
+      - "4224"
+    networks:
+      - logs
+    labels:
+      io.balena.features.balena-api: '1'
+
+networks:
+  logs:
+    driver: bridge
 
 volumes:
   work:

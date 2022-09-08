@@ -31,13 +31,13 @@ RUN git clone \
 RUN ./rsyslog/autogen.sh \
         --enable-generate-man-pages=no \
         --enable-imjournal \
-        --enable-mmjsonparse && \
+        --enable-mmjsonparse\
+        --enable-omhttp && \
     make install
 
 ## Built binaries & libs without development libraries ##
 FROM balenalib/%%BALENA_MACHINE_NAME%%-ubuntu as run
 
-ARG S6_OVERLAY_VERSION=3.1.1.2
 
 # Copy built libs and binary
 COPY --from=build /usr/local/lib/rsyslog /usr/local/lib/rsyslog
@@ -47,16 +47,20 @@ RUN install_packages \
         libestr0 \
         libfastjson4 \
         xz-utils \
-        curl \
-        zstd
+        curl
+
+ARG S6_OVERLAY_VERSION=v3.1.2.1
+ARG S6_TAR=s6-overlay-noarch.tar.xz
+ARG X86_TAR=s6-overlay-x86_64.tar.xz
 
 # Add s6 overlay
-RUN curl --compressed -Lo /tmp/s6-overlay-noarch.tar.xz https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz
-RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
+RUN curl --compressed -Lo /tmp/${S6_TAR} https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/${S6_TAR}
+RUN tar -C / -Jxpf /tmp/${S6_TAR}
 # TODO: Make architecture independent
 # This TODO is probably not needed as rsyslog won't be run from within a container
-RUN curl --compressed -Lo /tmp/s6-overlay-x86_64.tar.xz https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz
-RUN tar -C / -Jxpf /tmp/s6-overlay-x86_64.tar.xz
+RUN curl --compressed -Lo /tmp/${X86_TAR} https://github.com/just-containers/s6-overlay/releases/download/${S6_OVERLAY_VERSION}/${X86_TAR}
+RUN tar -C / -Jxpf /tmp/${X86_TAR}
+RUN rm -r /tmp/*
 ENTRYPOINT ["/init"]
 
 # Copy rsyslog & s6 configs

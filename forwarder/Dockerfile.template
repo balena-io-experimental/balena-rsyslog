@@ -1,0 +1,9 @@
+FROM balenalib/%%BALENA_MACHINE_NAME%%-alpine-node:16
+
+WORKDIR /usr/src/app
+
+COPY package*.json *.js ./
+
+RUN npm install
+
+CMD ["npm", "start"]

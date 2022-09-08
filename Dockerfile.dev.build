@@ -1,6 +1,6 @@
 ## Build ##
 # The build must use ubuntu or another distro with libsystemd, so Alpine is not possible.
-FROM ubuntu as build
+FROM node:16 as build
 
 ARG RSYSLOG_VERSION=v8.2206.0
 
@@ -32,11 +32,12 @@ RUN git clone \
 RUN ./rsyslog/autogen.sh \
         --enable-generate-man-pages=no \
         --enable-imjournal \
-        --enable-mmjsonparse && \
+        --enable-mmjsonparse \
+        --enable-omhttp && \
     make install
 
 ## Built binaries & libs without development libraries ##
-FROM ubuntu as run
+FROM node:16 as run
 
 # Copy built libs and binary
 COPY --from=build /usr/local/lib/rsyslog /usr/local/lib/rsyslog
